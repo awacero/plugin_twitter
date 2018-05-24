@@ -29,6 +29,7 @@ class Plugin(plugin.PluginBase):
         self.twt_acc=cfg.twitter_page
         self.hour_limit=cfg.LIMIT_HOURS       
         self.twt_prm=self.read_config_file(cfg.token_file)
+        self.log_file=cfg.log_file
         if self.twt_prm == -1:
             logging.debug('Error while reading token file: %s' % (cfg.token_file))
             return(-1)
@@ -41,11 +42,7 @@ class Plugin(plugin.PluginBase):
     #publish in twt
     #store the ID in BD
         
-        #twt_acc="AWACERO"
-        #twitterTokenFile='/home/seiscomp/git/twitter/twitter_account.json'
-        #twt_prm=self.read_config_file(selftwitterTokenFile)
-        
-        
+
         '''
         Create postDB according to configFaceTweet.py
         '''
@@ -106,7 +103,7 @@ class Plugin(plugin.PluginBase):
             logging.info("##Insert twtID in DB")
             row_dct={'eventID':'%s' %d['evID'],'tweetID':'%s' %tweetID,'modo':'%s' %d['modo']}
             if sqliteTweetDB.savePost(row_dct)== 0:
-                logging.info("Post info inserted in DB")
+                logging.info("Post info inserted in DB. %s, %s, %s" %(d['evID'],tweetID, d['modo']) )
             else:
                 logging.info("Failed to insert tweet info in DB")
             return 0
@@ -198,9 +195,36 @@ class Plugin(plugin.PluginBase):
         
     def delete_post(self, evID):
         """
-        Delete post from 
+        Delete post from twitter 
         """
-        print(evID)
+        
+        import logging
+        logging.basicConfig(filename=self.log_file,format='%(asctime)s %(levelname)s %(message)s',level=logging.INFO)
+        
+        '''
+        Get API of twitter
+        '''
+        logging.info("##Connecting to twitter: %s" %self.twt_acc)
+        twt_api=self.connect_twitter(self.twt_prm[self.twt_acc])
+        
+        '''
+        Check if event has been published and delete it
+        '''     
+        select="*"
+        where="eventID='%s'" %evID
+        rows=sqliteTweetDB.getPost(select,where)
+        
+        for r in rows:
+            logging.info("Deleting post %s %s" %(r['eventID'],r['tweetID']))
+            msg=twt_api.destroy_status(r['tweetID'])
+            logging.info(msg)
+        
+        res=sqliteTweetDB.deletePost(evID)
+        
+        if res== 0:
+            logging.info("Deleted from post.db")
+        else:
+            logging.info("Error deleting: %s" %res)
         
         
   
