@@ -13,37 +13,122 @@ from eqelib import distancia
 import json
 import tweepy
 
+from eqelib import sqliteTweetDB
+from eqelib import configFaceTweet as cfg
+
 class Plugin(plugin.PluginBase):
-    VERSION="0.2"
+    VERSION="0.2" 
     
     
     def __init__(self,app,generator,env,db,cursor):
         
-        pass
-    
+        
+        logging.info("Calling init")
+
+        
+        self.twt_acc=cfg.twitter_page
+        self.hour_limit=cfg.LIMIT_HOURS       
+        self.twt_prm=self.read_config_file(cfg.token_file)
+        if self.twt_prm == -1:
+            logging.debug('Error while reading token file: %s' % (cfg.token_file))
+            return(-1)
+        
+        
     def processEvent(self, ctx,path):
         
     #convert ctx to txt
     #CONNECT TO twt
     #publish in twt
     #store the ID in BD
-    
-        twt_acc="AWACERO"
-        twitterTokenFile='/home/seiscomp/git/twitter/twitter_account.json'
-        twt_prm=self.read_config_file(twitterTokenFile)
+        
+        #twt_acc="AWACERO"
+        #twitterTokenFile='/home/seiscomp/git/twitter/twitter_account.json'
+        #twt_prm=self.read_config_file(selftwitterTokenFile)
+        
+        
+        '''
+        Create postDB according to configFaceTweet.py
+        '''
+        create_postDB = sqliteTweetDB.initDatabase()
+        if create_postDB == -1:
+            logging.debug("Could not create post DB. Exit")
+            return(-1)
+        
+        
         
         d=self.ctx2dict(ctx,path)
         logging.info("##Created dict: %s" %d)
-                
-        logging.info("##Connecting to twitter: %s" %twt_acc)
-        twt_api=self.connect_twitter(twt_prm[twt_acc])
         
+        '''
+        Check event antiquity 
+        '''
+        if self.check_antiquity(d['date']) ==-1:
+            logging.info("Event %s too old to publish" %d['evID'])
+            return -1
+        
+        logging.info("Age of event %s ok. Publish " %(d['evID'])) 
+        '''
+        Check if event has been published
+        '''     
+        select="*"
+        where="eventID='%s'" %d['evID']
+        rows=sqliteTweetDB.getPost(select,where)
+        
+        for r in rows:
+            if r['eventID']==d['evID'] and r['modo']==d['modo']:
+                logging.info("Event already published")
+                return 0
+            else:
+                logging.info("Event not found. Publish")
+        
+        
+        '''
+        Get API to twitter
+        '''
+        logging.info("##Connecting to twitter: %s" %self.twt_acc)
+        twt_api=self.connect_twitter(self.twt_prm[self.twt_acc])
+        
+        '''
+        Post to twitter
+        '''
         logging.info("##Trying to post to twitter")
         tweetID=self.post_event(twt_api,d)
-
-        logging.info("##Insert twtID in DB")
-        ##call to insert into DB
         
+        '''
+        Insert tweetID into DB  
+        '''   
+        ##call to insert into DB
+        if tweetID==-1:
+            "Error posting tweet"
+            exit(-1)
+        else:
+            "Insert evID, twtID, status in DB"
+            logging.info("##Insert twtID in DB")
+            row_dct={'eventID':'%s' %d['evID'],'tweetID':'%s' %tweetID,'modo':'%s' %d['modo']}
+            if sqliteTweetDB.savePost(row_dct)== 0:
+                logging.info("Post info inserted in DB")
+            else:
+                logging.info("Failed to insert tweet info in DB")
+            return 0
+
+        
+            
+    
+    def check_antiquity(self, dt):
+        """
+        Check the age of a event
+        Parameters:
+            dt - datetime object
+        """
+        #date_event_EC = convert_date_UTC2local(eventDateString)
+        date_check = datetime.now() - timedelta(hours=self.hour_limit)
+        
+        if date_check < dt:
+            return 0
+        else:
+            return -1
+
+       
         
     def ctx2dict(self,ctx,path):
         
@@ -96,7 +181,7 @@ class Plugin(plugin.PluginBase):
         Posting event information in twitter
         """
         
-        tweetPost="#SISMO ID: %s %s %s TL Magnitude:%s Prof: %s km, %s,Latitud: %s Longitud:%s " \
+        tweetPost="#TEST SISMO ID: %s %s %s TL Magnitude:%s Prof: %s km, %s,Latitud: %s Longitud:%s " \
         %(ev['evID'],ev['modo'],ev['date'], ev['magV'],ev['dept'],ev['dist'],ev['lati'],ev['long'])
 
         try:
@@ -111,6 +196,13 @@ class Plugin(plugin.PluginBase):
             logging.info( "Error trying to post twitter: %s" %str(e))
             return -1
         
-
+    def delete_post(self, evID):
+        """
+        Delete post from 
+        """
+        print(evID)
+        
+        
+  
 
         
