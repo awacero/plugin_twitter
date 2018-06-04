@@ -35,13 +35,7 @@ class Plugin(plugin.PluginBase):
             return(-1)
         
         
-    def processEvent(self, ctx,path):
-        
-    #convert ctx to txt
-    #CONNECT TO twt
-    #publish in twt
-    #store the ID in BD
-        
+    def processEvent(self, ctx,path):        
 
         '''
         Create postDB according to configFaceTweet.py
@@ -52,7 +46,9 @@ class Plugin(plugin.PluginBase):
             return(-1)
         
         
-        
+    	'''
+    	Create the dictionary from ctx 
+    	'''        
         d=self.ctx2dict(ctx,path)
         logging.info("##Created dict: %s" %d)
         
@@ -108,7 +104,6 @@ class Plugin(plugin.PluginBase):
                 logging.info("Failed to insert tweet info in DB")
             return 0
 
-        
             
     
     def check_antiquity(self, dt):

@@ -4,7 +4,7 @@ Created on Oct 31, 2017
 @author: wacero
 '''
 
-workspace   =   "/home/seiscomp/workspace/pluginTwitter"
+workspace   =   "/home/seiscomp/git/twitter"
 
 twitter_account_file  =   "%s/%s" %(workspace,"twitter_account.json")
 
