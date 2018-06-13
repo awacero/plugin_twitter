@@ -26,10 +26,10 @@ class Plugin(plugin.PluginBase):
         
         self.twt_acc=cfg.twitter_page
         self.hour_limit=cfg.LIMIT_HOURS       
-        self.twt_prm=self.read_config_file(cfg.token_file)
-        self.log_file=cfg.log_file
+        self.twt_prm=self.read_config_file(cfg.tw_token_file)
+        self.log_file=cfg.tw_log_file
         if self.twt_prm == -1:
-            logging.debug('Error while reading token file: %s' % (cfg.token_file))
+            logging.debug('Error while reading token file: %s' % (cfg.tw_token_file))
             return(-1)
         
         
