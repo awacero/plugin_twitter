@@ -3,18 +3,16 @@
 '''
 
 import seiscomp3.Logging as logging
-
 import eqelib.plugin as plugin
 import eqelib.settings as settings
 
 from datetime import datetime, timedelta
-from eqelib import distancia
-#import twitterPublish
 import json
 import tweepy
 
 from eqelib import sqliteTweetDB
 from eqelib import configFaceTweet as cfg
+from eqelib import distancia
 
 class Plugin(plugin.PluginBase):
     VERSION="0.2" 
