@@ -3,13 +3,19 @@ This project contains the code made by wacero to upload a seismic event to a Twi
 ##Example of configFaceTweet.py
 ##$SC3/lib/python/eqelib
 
-createpath  =   "/home/seiscomp/plugins_python/twitter"
-dbname      =   "%s/post.db" %(createpath)
-dbtable     =   "postsTwitter"
-tw_token_file  =   "/home/seiscomp/git/twitter/twitter_account.json"
-fb_token_file=  "/home/seiscomp/plugins_python/facebook/facebook_account.json"
-tw_log_file     =   "%s/twitter.log" %(createpath)
-fb_log_file  =
+HOME        =   "/home/seiscomp/"
+createpath  =   "/%s/plugins_python/" %HOME
+
+fb_dbname       ="%s/facebook/post.db" %(createpath)
+fb_dbtable      ="postFacebook"
+tw_dbname      =   "%s/twitter/post.db" %(createpath)
+tw_dbtable     =   "postsTwitter"
+
+tw_token_file  =   "/%s/plugins_python/twitter/twitter_account.json" %HOME
+fb_token_file  =   "/%s/plugins_python/facebook/facebook_account.json" %HOME
+tw_log_file    =   "%s/twitter/twitter.log" %(createpath)
+fb_log_file    =   "%s/facebook/facebook.log"%(createpath)
+ 
 local_zone  = 'America/Guayaquil'
 LIMIT_HOURS = 20
 DATE_FORMAT_EQ = '%Y/%m/%d %H:%M:%S'

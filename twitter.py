@@ -3,7 +3,7 @@
 '''
 import sys
 HOME="/home/seiscomp"
-sys.path.append("%s/plugins_python/facebook" %HOME)
+sys.path.append("%s/plugins_python/twitter" %HOME)
 
 import seiscomp3.Logging as logging
 import eqelib.plugin as plugin
@@ -12,8 +12,9 @@ import eqelib.settings as settings
 from datetime import datetime, timedelta
 import json
 import tweepy
+import sqliteTweetDB
+#from eqelib import sqliteTweetDB
 
-from eqelib import sqliteTweetDB
 from eqelib import configFaceTweet as cfg
 from eqelib import distancia
 

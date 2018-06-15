@@ -15,12 +15,12 @@ import logging
 
 
 def connectDatabase():
-    dbDir = os.path.dirname(configFaceTweet.dbname)
+    dbDir = os.path.dirname(configFaceTweet.tw_dbname)
     if not os.path.exists(dbDir):
         logging.debug("Creating DB directory")
         os.makedirs(dbDir)
     logging.debug("connecting to BD")
-    con = sqlite3.connect(configFaceTweet.dbname)
+    con = sqlite3.connect(configFaceTweet.tw_dbname)
     con.text_factory = bytes
     logging.debug("connection to DB established")
     return con
@@ -33,13 +33,13 @@ def closeDatabase(con):
 def initDatabase():
     logging.info("creating and starting BD")
     try:
-        if os.path.isfile(configFaceTweet.dbname):
+        if os.path.isfile(configFaceTweet.tw_dbname):
             return 0
         con = connectDatabase()
         cur = con.cursor()
         sql = """CREATE TABLE %s (
-        eventID TEXT , tweetID INTEGER PRIMARY KEY,modo TEXT)""" % configFaceTweet.dbtable
-        logging.debug("Creating table %s" % configFaceTweet.dbtable)
+        eventID TEXT , tweetID INTEGER PRIMARY KEY,modo TEXT)""" % configFaceTweet.tw_dbtable
+        logging.debug("Creating table %s" % configFaceTweet.tw_dbtable)
         cur.execute(sql)
         closeDatabase(con)
         logging.info("Table created")
@@ -49,11 +49,11 @@ def initDatabase():
         return -1
 
 def savePost(postDict):
-    postDict["table"] = configFaceTweet.dbtable
+    postDict["table"] = configFaceTweet.tw_dbtable
     con = connectDatabase()
     cur = con.cursor()
     sql = """INSERT INTO %s (eventID, tweetID, modo ) 
-        VALUES (:eventID,  :tweetID, :modo)""" % configFaceTweet.dbtable
+        VALUES (:eventID,  :tweetID, :modo)""" % configFaceTweet.tw_dbtable
 
     try:
         cur.execute(sql, postDict)
@@ -68,11 +68,11 @@ def savePost(postDict):
 
     
 def updatePost(postDict, column, value):
-    postDict["table"] = configFaceTweet.dbtable
+    postDict["table"] = configFaceTweet.tw_dbtable
     con = connectDatabase()
     cur = con.cursor()
     sql = """UPDATE %s SET %s = %s WHERE eventID= '%s'
-    """ % (configFaceTweet.dbtable, column, value, postDict['eventID'])
+    """ % (configFaceTweet.tw_dbtable, column, value, postDict['eventID'])
     try:
         logging.info("SQL: %s" % sql)
         cur.execute(sql, postDict)
@@ -95,7 +95,7 @@ def getPost(select="*", where=None):
     con.row_factory = dict_factory
     con.text_factory = str
     cur = con.cursor()
-    sql = "SELECT %s FROM %s " % (select, configFaceTweet.dbtable)
+    sql = "SELECT %s FROM %s " % (select, configFaceTweet.tw_dbtable)
     if where:
         sql += "WHERE %s " % where
     cur.execute(sql)
@@ -106,57 +106,10 @@ def getPost(select="*", where=None):
 def deletePost(evID):
     con= connectDatabase()
     cur=con.cursor()
-    sql="DELETE FROM %s WHERE eventID='%s'" %(configFaceTweet.dbtable,evID)
+    sql="DELETE FROM %s WHERE eventID='%s'" %(configFaceTweet.tw_dbtable,evID)
     try:
         cur.execute(sql)
         return 0
     except sqlite3.Error, e:
         return str(e)
     
-
-'''
-def updateDictInDb(eventDict):
-    eventDict["table"] = configFaceTweet.dbtable
-    con = connectDatabase()
-    cur = con.cursor()
-    select = "revision"
-    where = "eventID = '%s'" % (eventDict["eventID"])
-    oldEventDict = outputDB(select, where)
-    eventDict['revision'] = oldEventDict[0][select] + 1
-    #print eventDict
-    sql = """UPDATE %s SET latitude = :latitude,
-    longitude = :longitude, depth = :depth, Mw = :Mw,
-     residualM = :residualM, residualW = :residualW,
-    revision = :revision, tweetID= :tweetID
-    WHERE eventID = :eventID""" % configFaceTweet.dbtable
-    logging.info("Trying sql %s :" % str(sql))
-    try:
-        cur.execute(sql, eventDict)
-        logging.info("Event '%s' updated" % eventDict["eventID"])
-        closeDatabase(con)
-        return 0
-
-    except sqlite3.Error, e:
-        logging.error("Failed to update event %s : %s" % (eventDict["eventID"], str(e)))
-        return 1
-    closeDatabase(con)
-'''
-
-'''    
-def insertPostInfo(postInfo,column, value):
-    postInfo["table"] = configFaceTweet.dbtable
-    con = connectDatabase()
-    cur = con.cursor()
-    sql = """INSERT INTO %s (eventID, %s ) 
-        VALUES (:eventID,  :%s)""" % ( configFaceTweet.dbtable, column,column)
-
-    try:
-        cur.execute(sql, postInfo)
-        logging.debug("Event '%s' added" % postInfo['eventID'])
-        closeDatabase(con)
-        return 0
-
-    except sqlite3.Error, e:
-        logging.debug("Failed to add event %s : %s" % (postInfo['eventID'], str(e)))
-        return 1
-'''
