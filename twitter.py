@@ -30,7 +30,7 @@ class Plugin(plugin.PluginBase):
         self.log_file=cfg.tw_log_file
         if self.twt_prm == -1:
             logging.debug('Error while reading token file: %s' % (cfg.tw_token_file))
-            return(-1)
+            return False
         
         
     def processEvent(self, ctx,path):        
@@ -41,7 +41,7 @@ class Plugin(plugin.PluginBase):
         create_postDB = sqliteTweetDB.initDatabase()
         if create_postDB == -1:
             logging.debug("Could not create post DB. Exit")
-            return(-1)
+            return False
         
         
     	'''
@@ -55,7 +55,7 @@ class Plugin(plugin.PluginBase):
         '''
         if self.check_antiquity(d['date']) ==-1:
             logging.info("Event %s too old to publish" %d['evID'])
-            return -1
+            return False
         
         logging.info("Age of event %s ok. Publish " %(d['evID'])) 
         '''
@@ -68,10 +68,10 @@ class Plugin(plugin.PluginBase):
         for r in rows:
             if r['eventID']==d['evID'] and r['modo']==d['modo']:
                 logging.info("Event already published")
-                return 0
+                return True
             else:
                 logging.info("Event not found. Publish")
-        
+                return True
         
         '''
         Get API to twitter
@@ -91,16 +91,17 @@ class Plugin(plugin.PluginBase):
         ##call to insert into DB
         if tweetID==-1:
             "Error posting tweet"
-            exit(-1)
+            return False
         else:
             "Insert evID, twtID, status in DB"
             logging.info("##Insert twtID in DB")
             row_dct={'eventID':'%s' %d['evID'],'tweetID':'%s' %tweetID,'modo':'%s' %d['modo']}
             if sqliteTweetDB.savePost(row_dct)== 0:
                 logging.info("Post info inserted in DB. %s, %s, %s" %(d['evID'],tweetID, d['modo']) )
+                return True
             else:
                 logging.info("Failed to insert tweet info in DB")
-            return 0
+            return False
 
             
     
