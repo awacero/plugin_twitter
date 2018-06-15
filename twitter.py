@@ -1,6 +1,9 @@
 '''
 
 '''
+import sys
+HOME="/home/seiscomp"
+sys.path.append("%s/plugins_python/facebook" %HOME)
 
 import seiscomp3.Logging as logging
 import eqelib.plugin as plugin
