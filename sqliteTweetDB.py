@@ -7,7 +7,7 @@ Created on May 26, 2016
 
 import sqlite3
 import os
-import configFaceTweet
+from eqelib import configFaceTweet
 import logging
 
 #execDir = os.path.realpath(os.path.dirname(__file__))

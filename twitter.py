@@ -5,6 +5,8 @@ import sys
 HOME="/home/seiscomp"
 sys.path.append("%s/plugins_python/twitter" %HOME)
 
+
+
 import seiscomp3.Logging as logging
 import eqelib.plugin as plugin
 import eqelib.settings as settings
@@ -14,6 +16,7 @@ import json
 import tweepy
 import sqliteTweetDB
 #from eqelib import sqliteTweetDB
+
 
 from eqelib import configFaceTweet as cfg
 from eqelib import distancia
@@ -123,7 +126,16 @@ class Plugin(plugin.PluginBase):
         else:
             return -1
 
-       
+    def status(stat):
+        if stat == 'automatic':
+            stat = 'Preliminar'
+        elif stat == 'manual':
+            stat = 'Revisado'
+        else:
+            stat = '.'
+        return stat
+    
+    
         
     def ctx2dict(self,ctx,path):
         
@@ -133,15 +145,15 @@ class Plugin(plugin.PluginBase):
         d={}
         o=ctx['origin']
         d['evID']=ctx['ID']
-        d['modo']=str(o.evaluationMode)
+        d['modo']=status(str(o.evaluationMode))
         dtime=o.time.value
         dtime=datetime.strptime(dtime[:19],"%Y-%m-%dT%H:%M:%S") -timedelta(hours=5)
         d['date']=dtime
         d['magV']="%.2f" %o.magnitude.magnitude.value
         d['dept']="%.2f" %o.depth.value
         d['dist']=distancia.closest_distance(o.latitude.value,o.longitude.value)
-        d['lati']=o.latitude.value
-        d['long']=o.longitude.value
+        d['lati']="%.4f" %o.latitude.value
+        d['long']="%.4f" %o.longitude.value
         d['url']=distancia.create_google_url(d['date'],d['evID'])
         d['url']=str(distancia.short_url(d['url']))       
         d['path']="%s/%s-map.png" %(path,d['evID'])
@@ -176,8 +188,8 @@ class Plugin(plugin.PluginBase):
         Posting event information in twitter
         """
         
-        tweetPost="#TEST SISMO ID: %s %s %s TL Magnitude:%s Prof: %s km, %s,Latitud: %s Longitud:%s " \
-        %(ev['evID'],ev['modo'],ev['date'], ev['magV'],ev['dept'],ev['dist'],ev['lati'],ev['long'])
+        tweetPost="#TEST SISMO ID: %s %s %s TL Magnitud:%s Profundidad: %s km, %s,Latitud: %s Longitud:%s Sintio este sismo? Reportelo! en %s"\
+        %(ev['evID'],ev['modo'],ev['date'], ev['magV'],ev['dept'],ev['dist'],ev['lati'],ev['long'],ev['url'])
 
         try:
             logging.info(ev['path'])
