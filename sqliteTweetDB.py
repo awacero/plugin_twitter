@@ -10,9 +10,6 @@ import os
 from eqelib import configFaceTweet
 import logging
 
-#execDir = os.path.realpath(os.path.dirname(__file__))
-#logging.basicConfig(filename=os.path.join(execDir, "faceplugin.log"), level=logging.DEBUG)
-
 
 def connectDatabase():
     dbDir = os.path.dirname(configFaceTweet.tw_dbname)
@@ -109,7 +106,8 @@ def deletePost(evID):
     sql="DELETE FROM %s WHERE eventID='%s'" %(configFaceTweet.tw_dbtable,evID)
     try:
         cur.execute(sql)
-        return 0
+        con.commit()
+        return True
     except sqlite3.Error, e:
         return str(e)
     
