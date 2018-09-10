@@ -192,37 +192,43 @@ class Plugin(plugin.PluginBase):
         import logging
         logging.basicConfig(filename=self.log_file,format='%(asctime)s %(levelname)s %(message)s',level=logging.INFO)
         
-        """         Get API of twitter         """
-        logging.info("##Connecting to twitter: %s" %self.twt_acc)
-        twt_api=self.connect_twitter(self.twt_prm[self.twt_acc])
+        try:
+                   
+            """Get API of twitter         """
+            logging.info("##Connecting to twitter: %s" %self.twt_acc)
+            twt_api=self.connect_twitter(self.twt_prm[self.twt_acc])
+        except Exception as e:
+            logging.info("##Error connecting to twitter: %s" %str(e))
+            return False
         
-        """         Check if event has been published and delete it         """     
+        """Check if event has been published and delete it         """     
         select="*"
         where="eventID='%s'" %evID
         rows=sqliteTweetDB.getPost(select,where)
         
-        for r in rows:
-            try:
-                
-                logging.info("Deleting post %s %s" %(r['eventID'],r['tweetID']))
-                msg=twt_api.destroy_status(r['tweetID'])
-                logging.debug(msg)
-                
-                res=sqliteTweetDB.deletePost(evID)
-        
-                if res== True:
-                    logging.info("Deleted from post.db")
-                    return True
-                else:
-                    logging.info("Error deleting: %s from post.db" %res)
+        if len(rows)!=0:       
+            for r in rows:
+                try:
+                    
+                    logging.info("Deleting post %s %s" %(r['eventID'],r['tweetID']))
+                    msg=twt_api.destroy_status(r['tweetID'])
+                    logging.debug(msg)
+                    """Delete event from twitter post.db"""
+                    res=sqliteTweetDB.deletePost(evID)
+                    if res== True:
+                        logging.info("Deleted from twitter post.db")
+                        return True
+                    else:
+                        logging.info("Error deleting: %s from twitter post.db" %res)
+                        return False
+                    
+                except Exception as e:
+                    logging.info("Error in delete_post(): %s" %(str(e)))
                     return False
-                
-                
-            except Exception as e:
-                logging.info("Error in delete_post(): %s" %(str(e)))
-                return False
             
-
+        else:
+            logging.info("Event %s not found in twitter post.db. Nothing to do" %evID)
+            return False
         
         
   
