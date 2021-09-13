@@ -1,0 +1,14 @@
+{
+	"CUENTA_PRUEBA":{
+		"api_key":"xxxxxxxx",
+		"api_secret":"xxxxxxxxx",
+		"access_token":"xxxxxx",
+		"secret_token":"xxxxxxxx"
+	},
+	"CUENTA_PRODUCCION":{
+		"api_key":"XXXXXXX",
+		"api_secret":"XXXXXXXX",
+		"access_token":"XXXXXXXXXXX",
+		"secret_token":"XXXXXXXXXX"
+	}
+}

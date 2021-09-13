@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 
 import sys,os
 HOME=os.getenv("HOME")
-sys.path.append("%s/plugins_python/twitter" %HOME)
+sys.path.append("%s/plugins_python/plugin_twitter" %HOME)
 
 
 
@@ -17,7 +18,7 @@ import sqliteTweetDB
 
 
 from eqelib import configFaceTweet as cfg
-from eqelib import distancia
+from eqelib import utilities 
 
 class Plugin(plugin.PluginBase):
     VERSION="0.2" 
@@ -138,11 +139,10 @@ class Plugin(plugin.PluginBase):
         d['date']=dtime
         d['magV']="%.2f" %o.magnitude.magnitude.value
         d['dept']="%.2f" %o.depth.value
-        d['dist']=distancia.closest_distance(o.latitude.value,o.longitude.value)
+        d['dist']=utilities.get_closest_city(o.latitude.value,o.longitude.value)
         d['lati']="%.4f" %o.latitude.value
         d['long']="%.4f" %o.longitude.value
-        d['url']=distancia.create_google_url(d['date'],d['evID'])
-        d['url']=str(distancia.short_url(d['url']))       
+        d['url']=str(utilities.get_survey_url(d['date'],d['evID']))
         d['path']="%s/%s-map.png" %(path,d['evID'])
         return d
 
@@ -171,7 +171,7 @@ class Plugin(plugin.PluginBase):
     def post_event(self,twitter_api,ev):
         """         Posting event information in twitter         """
         
-        tweetPost="#TEST SISMO ID: %s %s %s TL Magnitud:%s Profundidad: %s km, %s,Latitud: %s Longitud:%s Sintio este sismo? Reportelo! en %s"\
+        tweetPost="#SISMO ID: %s %s %s TL Magnitud:%s Profundidad: %s km, %s,Latitud: %s Longitud:%s Sintió este sismo? Repórtelo! en %s"\
         %(ev['evID'],ev['modo'],ev['date'], ev['magV'],ev['dept'],ev['dist'],ev['lati'],ev['long'],ev['url'])
 
         try:
